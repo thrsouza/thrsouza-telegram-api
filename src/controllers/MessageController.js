@@ -22,16 +22,19 @@ class MessageController {
       await schema.validate({ name, email, message }, { abortEarly: false })
 
       await MessageService.send({ name, email, message })
-      res.status(200).json({ ok: true, message: 'Thanks for your submission!' })
+      res.status(201).json({ ok: true, message: 'Thanks for your submission!' })
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         const feedbacks = validationErrorFeedbacks
         const feedback = feedbacks[Math.floor(Math.random() * feedbacks.length)]
 
-        return res.status(400).json({
-          ok: false,
-          message: `${feedback} Complete all the fields correctly.`,
-        })
+        return res
+          .status(400)
+          .set('X-Status-Reason', 'Form validation failed')
+          .json({
+            ok: false,
+            message: `${feedback} Complete all the fields correctly.`,
+          })
       }
 
       return res.status(500).json({
